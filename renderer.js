@@ -39,7 +39,12 @@ new Vue({
             }
         },
         importInputHandler(e){
+            // 检查是否选中文件
+            console.log(e)
+            let files = e.target.files
+            if (!files[0]) return
             this.$refs.imageCards[this.$refs.imageCards.length-1].importInputHandler(e)
+            e.target.value = ''
         }
     },
     computed:{

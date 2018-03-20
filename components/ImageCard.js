@@ -87,8 +87,7 @@ module.exports = {
             this.state = this.CONVERTING
             let filename = Date.now()+'.lzw'
             let tmpFilePath = path.join(tmpdir,filename)
-
-            exec(`${path.resolve('./lzw.exe')} zip ${filePath} ${tmpFilePath}`,{ encoding: binaryEncoding }, (err,stdout,stderr)=>{
+            exec(`${path.join(__dirname,'../lzw.exe')} zip ${filePath} ${tmpFilePath}`,{ encoding: binaryEncoding }, (err,stdout,stderr)=>{
                 if(err) {
                     console.log(iconv.decode(new Buffer(stdout, binaryEncoding), encoding), iconv.decode(new Buffer(stderr, binaryEncoding), encoding));
                 } else {
@@ -96,6 +95,7 @@ module.exports = {
                     this.state = this.DISPLAYING
                     this.operationType = this.ZIP
                     this.tmpFilePath = tmpFilePath
+                    this.$message('成功')
                 }
             });
         },
@@ -104,8 +104,7 @@ module.exports = {
             this.state = this.CONVERTING
             let filename = Date.now()+'.bmp'
             let tmpFilePath = path.join(tmpdir,filename)
-
-            exec(`${path.resolve('./lzw.exe')} unzip ${filePath} ${tmpFilePath}`,{ encoding: binaryEncoding }, (err,stdout,stderr)=>{
+            exec(`${path.join(__dirname,'../lzw.exe')} unzip ${filePath} ${tmpFilePath}`,{ encoding: binaryEncoding }, (err,stdout,stderr)=>{
                 if(err) {
                     console.log(iconv.decode(new Buffer(stdout, binaryEncoding), encoding), iconv.decode(new Buffer(stderr, binaryEncoding), encoding));
                 } else {
@@ -113,6 +112,7 @@ module.exports = {
                     this.state = this.DISPLAYING
                     this.operationType = this.UNZIP
                     this.tmpFilePath = tmpFilePath
+                    this.$message('成功')
                 }
             });
         },

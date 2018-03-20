@@ -10,7 +10,7 @@ const options = {
     out:path.resolve('./app'),
     ignore:/cache/,
     overwrite:true,
-    arch:'x64'
+    arch:'ia32'
 }
 packager(options, function done_callback(err, appPaths) {
     if (err) {
