@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>lzw</title>
+    <style>
+        html{
+            height: 100%;
+            font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+        }
+        body{
+            height: 100%;
+            margin: 0;
+        }
+
+        /*ImageCard.js*/
+        .image-card .image-container{
+            font-size: .7em;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+        }
+        .image-card .image-container img{
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .image-card .image-default-hint-text{
+
+        }
+    </style>
+    <link rel="stylesheet" href="lib/vue-element.css">
+    <script src="lib/vue.js"></script>
+    <script src="lib/vue-element.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<script>
+    require('./renderer.js')
+</script>
+</body>
+</html>
