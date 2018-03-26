@@ -17,36 +17,41 @@ new Vue({
         <el-button type="text" style="float: right;" @click="openOutputDir">打开输出文件夹</el-button>
     </div>
     <div>
-        <image-card ref="imageCards" :key="x" v-for="x in displayingImageCardNum+1" :outputDir="outputDir" @statechange="handleImageCardStateChange"/>
+        <image-card ref="imageCards" :key="key" :keyProp="key" v-for="key in displayingImageCards" :outputDir="outputDir" @statechange="handleImageCardStateChange"/>
     </div>
 </el-card>
     `,
-    data(){
-        return{
-            outputDir : path.resolve('./output'),
-            displayingImageCardNum:0
+    data() {
+        return {
+            outputDir: path.resolve('./output'),
+            displayingImageCardNum: 0,
+            displayingImageCards: [this.generateKey()],
         }
     },
-    mounted(){
+    mounted() {
     },
-    methods:{
-        openOutputDir(){
-            shell.showItemInFolder(path.join(this.outputDir,'./'))
+    methods: {
+        openOutputDir() {
+            shell.showItemInFolder(path.join(this.outputDir, './'))
         },
-        handleImageCardStateChange(context,state){
-            if (state===context.DISPLAYING){
-                this.displayingImageCardNum++
+        handleImageCardStateChange(context, state) {
+            if (state === context.DISPLAYING) {
+                // this.displayingImageCardNum++
+                this.displayingImageCards.push(this.generateKey())
+            } else if (state === context.DONE) {
+                this.displayingImageCards.splice(context.index, 1)
             }
         },
-        importInputHandler(e){
+        importInputHandler(e) {
             // 检查是否选中文件
-            console.log(e)
             let files = e.target.files
             if (!files[0]) return
-            this.$refs.imageCards[this.$refs.imageCards.length-1].importInputHandler(e)
+            this.$refs.imageCards[this.$refs.imageCards.length - 1].importInputHandler(e)
             e.target.value = ''
+        },
+        generateKey() {
+            return Math.random()
         }
     },
-    computed:{
-    }
+    computed: {}
 })

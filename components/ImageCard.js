@@ -10,7 +10,11 @@ const shell = require('electron').shell
 
 module.exports = {
     template: `
-<el-card class="image-card" style="display: inline-block;margin: 5px">
+<el-card 
+    class="image-card" 
+    style="display: inline-block;margin: 5px"
+    @dragover.native.stop.prevent="handleDragover" 
+    @drop.native.stop.prevent="handleDragover">
     <div class="image-container">
         <div class="image-default" v-if="state===IDLE">
             <div class="image-default-hint-text">
@@ -62,6 +66,10 @@ module.exports = {
         outputDir:{
             type:String,
             default:path.resolve('./output')
+        },
+        // 标记在父组件中的位置 用于删除等操作
+        index:{
+            default:Math.random()
         }
     },
     data() {
@@ -73,6 +81,7 @@ module.exports = {
             IMAGE_HOVERING: 1,//拖拽悬停
             CONVERTING:3,//正在处理图片
             DISPLAYING: 2,//正在展示图片
+            DONE:4,
 
             operationType: 0,
             ZIP: 0,
@@ -125,7 +134,8 @@ module.exports = {
             let outputFile = path.join(this.outputDir,`${Date.now()}${ext}`)
             fs.rename(this.tmpFilePath,outputFile,  (err) => {
                 if (err) throw err;
-                this.$message('导出成功');
+                this.$message('导出成功')
+                this.state = this.DONE
             });
         },
         importInputHandler(e) {
@@ -138,6 +148,9 @@ module.exports = {
             } else {
                 this.$message('文件类型匹配失败:必须是*.lzw/*.bmp')
             }
+        },
+        handleDragover(e){
+            console.log(e)
         }
     },
     watch:{
