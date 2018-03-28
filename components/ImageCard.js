@@ -12,29 +12,32 @@ module.exports = {
     template: `
 <el-card 
     class="image-card" 
-    style="display: inline-block;margin: 5px"
-    @dragover.native.stop.prevent="handleDragover" 
-    @drop.native.stop.prevent="handleDragover">
-    <div class="image-container">
-        <div class="image-default" v-if="state===IDLE">
+    @dragover.native.prevent="" 
+    style="display: inline-block;margin: 5px">
+    <div class="image-container"
+        ref="imageContainer"
+        @dragenter="handleDragenter"
+        @dragleave="handleDragleave"
+        @drop.prevent="handleDrop">
+        <div class="image-default" @dragleave.stop="" v-if="state===IDLE">
             <div class="image-default-hint-text">
                 <i class="el-icon-circle-plus-outline"></i>
                 <p style="margin: .2em 0">拖拽到这里</p>
             </div>
         </div>
-        <div class="image-hover" v-else-if="state===IMAGE_HOVERING">
+        <div class="image-hover" @dragleave.stop="" v-else-if="state===IMAGE_HOVERING">
             <div class="image-hover-hint-text">
                 <i class="el-icon-download"></i>
                 <p style="margin: .2em 0">释放鼠标</p>
             </div>
         </div>
-        <div class="image-converting" v-else-if="state===CONVERTING">
+        <div class="image-converting" @dragleave.stop="" v-else-if="state===CONVERTING">
             <div class="image-hover-hint-text">
                 <i class="el-icon-loading"></i>
                 <p style="margin: .2em 0">正在处理</p>
             </div>
         </div>
-        <img :src="imgSrc" v-else>
+        <img :src="imgSrc" @dragleave.stop="" v-else>
     </div>
     <div style="padding: 14px 0 0 0;">
         <el-button 
@@ -62,14 +65,14 @@ module.exports = {
     </div>
 </el-card>
     `,
-    props:{
-        outputDir:{
-            type:String,
-            default:path.resolve('./output')
+    props: {
+        outputDir: {
+            type: String,
+            default: path.resolve('./output')
         },
         // 标记在父组件中的位置 用于删除等操作
-        index:{
-            default:Math.random()
+        index: {
+            default: Math.random()
         }
     },
     data() {
@@ -79,25 +82,26 @@ module.exports = {
             state: 0,
             IDLE: 0,//还没有进行才做
             IMAGE_HOVERING: 1,//拖拽悬停
-            CONVERTING:3,//正在处理图片
+            CONVERTING: 3,//正在处理图片
             DISPLAYING: 2,//正在展示图片
-            DONE:4,
+            DONE: 4,
+
 
             operationType: 0,
             ZIP: 0,
             UNZIP: 1,
 
-            tmpFilePath:null
+            tmpFilePath: null
         }
     },
     methods: {
         zipBmp(filePath) {
             if (this.state !== this.IDLE) return
             this.state = this.CONVERTING
-            let filename = Date.now()+'.lzw'
-            let tmpFilePath = path.join(tmpdir,filename)
-            exec(`${path.join(__dirname,'../lzw.exe')} zip ${filePath} ${tmpFilePath}`,{ encoding: binaryEncoding }, (err,stdout,stderr)=>{
-                if(err) {
+            let filename = Date.now() + '.lzw'
+            let tmpFilePath = path.join(tmpdir, filename)
+            exec(`${path.join(__dirname, '../lzw.exe')} zip ${filePath} ${tmpFilePath}`, {encoding: binaryEncoding}, (err, stdout, stderr) => {
+                if (err) {
                     console.log(iconv.decode(new Buffer(stdout, binaryEncoding), encoding), iconv.decode(new Buffer(stderr, binaryEncoding), encoding));
                 } else {
                     this.imgSrc = filePath
@@ -111,10 +115,10 @@ module.exports = {
         unzipLzw(filePath) {
             if (this.state !== this.IDLE) return
             this.state = this.CONVERTING
-            let filename = Date.now()+'.bmp'
-            let tmpFilePath = path.join(tmpdir,filename)
-            exec(`${path.join(__dirname,'../lzw.exe')} unzip ${filePath} ${tmpFilePath}`,{ encoding: binaryEncoding }, (err,stdout,stderr)=>{
-                if(err) {
+            let filename = Date.now() + '.bmp'
+            let tmpFilePath = path.join(tmpdir, filename)
+            exec(`${path.join(__dirname, '../lzw.exe')} unzip ${filePath} ${tmpFilePath}`, {encoding: binaryEncoding}, (err, stdout, stderr) => {
+                if (err) {
                     console.log(iconv.decode(new Buffer(stdout, binaryEncoding), encoding), iconv.decode(new Buffer(stderr, binaryEncoding), encoding));
                 } else {
                     this.imgSrc = tmpFilePath
@@ -126,13 +130,13 @@ module.exports = {
             });
         },
         exportFile(ext) {
-            if (!(this.state===this.DISPLAYING)) return
+            if (!(this.state === this.DISPLAYING)) return
             try {
                 fs.mkdirSync(this.outputDir)
-            }catch (e){
+            } catch (e) {
             }
-            let outputFile = path.join(this.outputDir,`${Date.now()}${ext}`)
-            fs.rename(this.tmpFilePath,outputFile,  (err) => {
+            let outputFile = path.join(this.outputDir, `${Date.now()}${ext}`)
+            fs.rename(this.tmpFilePath, outputFile, (err) => {
                 if (err) throw err;
                 this.$message('导出成功')
                 this.state = this.DONE
@@ -149,13 +153,33 @@ module.exports = {
                 this.$message('文件类型匹配失败:必须是*.lzw/*.bmp')
             }
         },
-        handleDragover(e){
-            console.log(e)
-        }
+        handleDrop(e) {
+            if (!e.dataTransfer.files) return
+            let file = e.dataTransfer.files[0]
+            if (!file) return
+            if (/\.(lzw)$/i.test(file.path)) {
+                this.state = this.IDLE
+                this.unzipLzw(file.path)
+            } else if (/\.(bmp)$/i.test(file.path)) {
+                this.state = this.IDLE
+                this.zipBmp(file.path)
+            } else {
+                this.$message('文件类型匹配失败:必须是*.lzw/*.bmp')
+            }
+        },
+        handleDragenter(e) {
+            if (!(this.state === this.IDLE)) return
+            this.state = this.IMAGE_HOVERING
+        },
+        handleDragleave(e) {
+            if (e.offsetX <= e.target.clientWidth && e.offsetX>=0 &&e.offsetY <= e.target.clientHeight && e.offsetY>=0 ) return
+            if (!(this.state === this.IMAGE_HOVERING)) return
+            this.state = this.IDLE
+        },
     },
-    watch:{
-        state(val){
-            this.$emit('statechange',this,val)
+    watch: {
+        state(val) {
+            this.$emit('statechange', this, val)
         }
     }
 }
