@@ -8,7 +8,7 @@ const options = {
     },
     electronVersion: '1.8.4',
     out: path.resolve('./app'),
-    ignore: [/cache/, /output/],
+    ignore: [/cache/, /output/,/cppsrc/],
     overwrite: true,
     arch: 'x64'
 }
